@@ -7,9 +7,16 @@
 Where the letters are variables that stand in for digits [0-9]:
 """
 
+from enum import Enum
 import re
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Dict, List, Tuple
+
+
+class QuotientTen(Enum):
+    zero = 0
+    one = 1
+    unknown = -1
 
 
 @dataclass
@@ -20,7 +27,7 @@ class sum_eqn:
 
 
 def solve_digit_problem_naive(
-    equation: str, solve_for: str = None, constraints: List[str] = None
+    equation: str, solve_for: str = None, constraints: Dict[int, int] = None
 ):
     """A simple method to solve this kind of problem for simple arithmetic expressions
 
@@ -31,6 +38,11 @@ def solve_digit_problem_naive(
     problem_string : str
         A string holding a problem
     """
+    if constraints is not None:
+        solved = constraints.copy()
+    else:
+        solved = {}
+
     expression_regex = re.compile(
         r"(?P<summand_1>[a-zA-Z ]+)\+(?P<summand_2>[a-zA-Z ]+)=(?P<sum>[a-zA-Z ]+)"
     )
@@ -44,6 +56,10 @@ def solve_digit_problem_naive(
     result = whitespace_regex.sub("", parsed_problem["sum"])
 
     max_len = max([len(summand_1, summand_2)])
+
+    if len(result) == max_len + 1:
+        solved[result[0]] = 1
+
     for i in range(max_len - 1, -1, -1):
         pass
 
