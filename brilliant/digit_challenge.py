@@ -11,6 +11,7 @@ from enum import Enum
 import re
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
+from itertools import zip_longest
 
 
 class QuotientTen(Enum):
@@ -20,14 +21,38 @@ class QuotientTen(Enum):
 
 
 @dataclass
-class sum_eqn:
-    summands: Tuple[int, int]
+class SumEqn:
+    summands: List[int, int]
     result: int
-    is_mod_10: bool
+    quotient_ten: QuotientTen
+
+
+def problem_parser(
+    equation: str, solve_for: str, constraints: Dict[int, int]
+) -> List[SumEqn]:
+    expression_regex = re.compile(
+        r"(?P<summand_1>[a-zA-Z ]+)\+(?P<summand_2>[a-zA-Z ]+)=(?P<sum>[a-zA-Z ]+)"
+    )
+
+    whitespace_regex = re.compile(r"\s")
+
+    parsed_problem = expression_regex.fullmatch(equation)
+    summand_1 = whitespace_regex.sub("", parsed_problem["summand_1"])[::-1]
+    summand_2 = whitespace_regex.sub("", parsed_problem["summand_2"])[::-1]
+
+    result = whitespace_regex.sub("", parsed_problem["sum"])[::-1]
+
+    equations = zip_longest(summand_1, summand_2, result, fillvalue=0)
+
+    equations = [
+        SumEqn([eq[0], eq[1]], eq[2], QuotientTen.unknown) for eq in equations
+    ] + [SumEqn([0, 0], 0, QuotientTen.zero)]
+
+    return equations
 
 
 def solve_digit_problem_naive(
-    equation: str, solve_for: str = None, constraints: Dict[int, int] = None
+    equation: str, solve_for: str = None, constraints: Dict[str, int] = None
 ):
     """A simple method to solve this kind of problem for simple arithmetic expressions
 
@@ -43,25 +68,44 @@ def solve_digit_problem_naive(
     else:
         solved = {}
 
-    expression_regex = re.compile(
-        r"(?P<summand_1>[a-zA-Z ]+)\+(?P<summand_2>[a-zA-Z ]+)=(?P<sum>[a-zA-Z ]+)"
-    )
+    equations = problem_parser(equation, solve_for, constraints)
 
-    whitespace_regex = re.compile(r"\s")
+    progress = True
+    while progress:
+        progress = False
+        for i, eq in enumerate(equations):
+            # Apply hand crafted rules
+            a, b = sorted(eq.summands)
+            r = eq.result
 
-    parsed_problem = expression_regex.fullmatch(equation)
-    summand_1 = whitespace_regex.sub("", parsed_problem["summand_1"])
-    summand_2 = whitespace_regex.sub("", parsed_problem["summand_2"])
+            if a == b == 0:
+                if r == 0:
+                    ...
+                elif r == 1:
+                    ...
+                else:
+                    ...
 
-    result = whitespace_regex.sub("", parsed_problem["sum"])
+        for eq in equations:
+            summands = eq.summands
 
-    max_len = max([len(summand_1, summand_2)])
+            if summands[0] in solved:
+                summands[0] = solved[summands[0]]
 
-    if len(result) == max_len + 1:
-        solved[result[0]] = 1
+            if summands[1] in solved:
+                summands[1] = solved[summands[1]]
 
-    for i in range(max_len - 1, -1, -1):
-        pass
+            if eq.result in solved:
+                eq.result = solved[eq.result]
+
+            if type(eq.result) == int:
+                if type(summands[0]) == int and summands[0] > eq.result:
+                    eq.quotient_ten = QuotientTen.one
+
+                if type(summands[1]) == int and summands[1] > eq.result:
+                    eq.quotient_ten = QuotientTen.one
+
+            # if eq.summands[0]
 
 
 if __name__ == "__main__":
