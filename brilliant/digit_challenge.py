@@ -86,7 +86,7 @@ def solve_digit_problem_naive(
                 else:
                     ...
 
-        for eq in equations:
+        for i, eq in enumerate(equations):
             summands = eq.summands
 
             if summands[0] in solved:
@@ -99,13 +99,32 @@ def solve_digit_problem_naive(
                 eq.result = solved[eq.result]
 
             if type(eq.result) == int:
-                if type(summands[0]) == int and summands[0] > eq.result:
-                    eq.quotient_ten = QuotientTen.one
+                if type(summands[0]) == int:
+                    if summands[0] > eq.result:
+                        eq.quotient_ten = QuotientTen.one
 
-                if type(summands[1]) == int and summands[1] > eq.result:
-                    eq.quotient_ten = QuotientTen.one
+                    elif summands[0] == eq.result:
+                        eq.quotient_ten = QuotientTen.zero
+                        summands[1] = solved[summands[1]] = 0
 
-            # if eq.summands[0]
+                if type(summands[1]) == int:
+                    if summands[1] > eq.result:
+                        eq.quotient_ten = QuotientTen.one
+
+                    elif summands[1] == eq.result:
+                        eq.quotient_ten = QuotientTen.zero
+                        summands[0] = solved[summands[0]] = 0
+
+            if (
+                type(eq.summands[0]) == type(eq.summands[1]) == int
+                and type(eq.result) is not int
+            ):
+                plus_one = equations[i - 1].quotient_ten
+                if plus_one == QuotientTen.zero:
+                    solved[eq.result] = sum(eq.summands)
+
+                elif plus_one == QuotientTen.one:
+                    solved[eq.result] = sum(eq.summands)
 
 
 if __name__ == "__main__":
