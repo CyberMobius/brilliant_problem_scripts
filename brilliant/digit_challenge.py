@@ -124,7 +124,18 @@ def solve_digit_problem_naive(
                     solved[eq.result] = sum(eq.summands)
 
                 elif plus_one == QuotientTen.one:
-                    solved[eq.result] = sum(eq.summands)
+                    solved[eq.result] = sum(eq.summands) + 1
+
+                if eq.result in solved:
+                    if solved[eq.result] >= 10:
+                        eq.quotient_ten = QuotientTen.one
+                    else:
+                        eq.quotient_ten = QuotientTen.zero
+
+                elif sum(eq.summands) >= 10:
+                    eq.quotient_ten = QuotientTen.one
+                elif sum(eq.summands) < 9:
+                    eq.quotient_ten = QuotientTen.zero
 
 
 if __name__ == "__main__":
